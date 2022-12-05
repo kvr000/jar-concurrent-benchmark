@@ -21,6 +21,7 @@
 		<maven-shade-plugin.version>3.4.1</maven-shade-plugin.version>
 		<maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
 		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
+		<dryuf-executable-jar-maven-plugin.version>1.2.2</dryuf-executable-jar-maven-plugin.version>
 
 		<lombok.version>1.18.22</lombok.version>
 
@@ -62,7 +63,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<finalName>jar-concurrent-benchmark</finalName>
+							<finalName>jar-concurrent-benchmark-shaded-tmp</finalName>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
 							<transformers>
 								<transformer
@@ -70,6 +71,37 @@
 									<mainClass>org.openjdk.jmh.Main</mainClass>
 								</transformer>
 							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>net.dryuf.maven.plugin</groupId>
+				<artifactId>dryuf-executable-jar-maven-plugin</artifactId>
+				<version>${dryuf-executable-jar-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>create-executable</goal>
+						</goals>
+						<configuration>
+							<vmParams>-Xmx64m</vmParams>
+							<sort>true</sort>
+							<resourceConfigs>
+								<resourceConfig>
+									<pattern>glob:**/*.stored</pattern>
+									<minimalCompress>100</minimalCompress>
+								</resourceConfig>
+								<resourceConfig>
+									<pattern>glob:**</pattern>
+									<type>dir</type>
+									<remove>true</remove>
+								</resourceConfig>
+							</resourceConfigs>
+							<input>target/jar-concurrent-benchmark-shaded-tmp.jar</input>
+							<output>target/jar-concurrent-benchmark.jar</output>
 						</configuration>
 					</execution>
 				</executions>
@@ -89,6 +121,7 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- jmh -->
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-core</artifactId>
